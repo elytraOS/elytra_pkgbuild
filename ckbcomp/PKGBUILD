@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Maintainer: EndeavourOS-Team <info@endeavouros.com>
+
+# Ex-Maintainer:  Nissar Chababy <funilrys at outlook dot com>
+# Ex-Maintainer:  Jeroen Bollen <jbinero at gmail dot comau>
+
+_ckbcomp_preparations() {
+    local site="https://salsa.debian.org"
+
+    url="$site/installer-team/console-setup"
+
+    local data=$(curl --fail --silent --location --max-time 10 $url/-/tags)
+    local dl="$site$(echo "$data" | grep '"nofollow" download' | grep \.tar\.gz | head -n1 | sed -e 's|.* href="||' -e 's|".*||')"
+
+    pkgver=$(echo "$dl" | sed -E 's|.*/([0-9\.]+)/.*|\1|')
+    source=("$dl")
+}
+_ckbcomp_preparations
+unset -f _ckbcomp_preparations
+
+pkgname=ckbcomp
+pkgrel=1
+pkgdesc="Compile a XKB keyboard description to a keymap suitable for loadkeys or kbdcontrol"
+arch=(any)
+license=('GPL2')
+depends=('perl')
+
+sha512sums=('20b148e3ffa1a57509e1bdab091ae36df04f363c7ca54e1decc15c14325df85b3d100e4b9a1e5884c18d47d45066b029bd450c9588f3103c03ad102d348869ad')
+
+package() {
+    local appname=$(basename "${source[0]}"  -$pkgver.tar.gz)
+
+    install -Dm755 "${appname}-$pkgver/Keyboard/$pkgname"   "${pkgdir}/usr/bin/$pkgname"
+
+    rm -f "../${appname}-$pkgver.tar.gz"   # cleanup
+}
